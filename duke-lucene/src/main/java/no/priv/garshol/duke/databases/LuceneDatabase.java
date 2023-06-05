@@ -1,9 +1,9 @@
 
 package no.priv.garshol.duke.databases;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,7 +74,8 @@ public class LuceneDatabase implements Database {
   private GeoProperty geoprop;
 
   public LuceneDatabase() {
-    this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    this.analyzer = new StandardAnalyzer();
+    this.analyzer.setVersion(Version.LATEST);
     this.maintracker = new EstimateResultTracker();
     this.max_search_hits = 1000000;
     this.fuzzy_search = true; // on by default
@@ -262,8 +263,8 @@ public class LuceneDatabase implements Database {
     if (geoprop != null) {
       String value = record.getValue(geoprop.getName());
       if (value != null) {
-        Filter filter = geoprop.geoSearch(value);
-        return maintracker.doQuery(new MatchAllDocsQuery(), filter);
+        Query filter = geoprop.geoSearch(value);
+        return maintracker.doQuery(filter);
       }
     }
 
@@ -332,13 +333,13 @@ public class LuceneDatabase implements Database {
           // as per http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
           // we use NIOFSDirectory, provided we're not on Windows
           if (Utils.isWindowsOS())
-            directory = FSDirectory.open(new File(path));
+            directory = FSDirectory.open(FileSystems.getDefault().getPath(path));
           else
-            directory = NIOFSDirectory.open(new File(path));
+            directory = NIOFSDirectory.open(FileSystems.getDefault().getPath(path));
         }
 
         IndexWriterConfig cfg =
-          new IndexWriterConfig(Version.LUCENE_CURRENT, analyzer);
+          new IndexWriterConfig(analyzer);
         cfg.setOpenMode(overwrite ? IndexWriterConfig.OpenMode.CREATE :
                                     IndexWriterConfig.OpenMode.APPEND);
         iwriter = new IndexWriter(directory, cfg);

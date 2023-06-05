@@ -36,12 +36,13 @@ public class ExtraLuceneDatabaseTest {
     // when the index we want to work with is already locked
 
     // make a locked index
-    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    Analyzer analyzer = new StandardAnalyzer();
+    analyzer.setVersion(Version.LATEST);
     IndexWriterConfig cfg =
-      new IndexWriterConfig(Version.LUCENE_CURRENT, analyzer);
+      new IndexWriterConfig(analyzer);
     File tmp = new File(System.getProperty("java.io.tmpdir"),
                         "lucene-temp-" + (Math.random() * 100000));
-    Directory directory = FSDirectory.open(tmp);
+    Directory directory = FSDirectory.open(tmp.toPath());
     IndexWriter writer = new IndexWriter(directory, cfg);
 
     // now try to open a LuceneDatabase in the same place

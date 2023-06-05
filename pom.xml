@@ -49,13 +49,15 @@ TO PUBLISH SNAPSHOTS
 
     <modules>
         <module>duke-core</module>
-        <module>duke-mapdb</module>
         <module>duke-lucene</module>
+        <module>duke-dist</module>
+	<!--
         <module>duke-es</module>
+        <module>duke-mapdb</module>
         <module>duke-server</module>
         <module>duke-mongodb</module>
         <module>duke-json</module>
-        <module>duke-dist</module>
+	-->
     </modules>
 
     <dependencies>

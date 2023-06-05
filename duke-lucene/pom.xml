@@ -26,14 +26,14 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>4.0.0</version>
+            <version>5.5.5</version>
         </dependency>
 
         <!-- necessary to get KeywordAnalyzer and StandardAnalyzer -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>4.0.0</version>
+            <version>5.5.5</version>
         </dependency>
 
         <!-- necessary for spatial searches
@@ -42,9 +42,21 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-spatial</artifactId>
-            <version>4.0.0</version>
+            <version>5.5.5</version>
         </dependency>
 
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
