@@ -26,14 +26,14 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>5.5.5</version>
+            <version>6.6.6</version>
         </dependency>
 
         <!-- necessary to get KeywordAnalyzer and StandardAnalyzer -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>5.5.5</version>
+            <version>6.6.6</version>
         </dependency>
 
         <!-- necessary for spatial searches
@@ -42,7 +42,21 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-spatial</artifactId>
-            <version>5.5.5</version>
+            <version>6.6.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-spatial-extras -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-spatial-extras</artifactId>
+            <version>6.6.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.locationtech.spatial4j/spatial4j -->
+        <dependency>
+            <groupId>org.locationtech.spatial4j</groupId>
+            <artifactId>spatial4j</artifactId>
+            <version>0.6</version>
         </dependency>
 
     </dependencies>

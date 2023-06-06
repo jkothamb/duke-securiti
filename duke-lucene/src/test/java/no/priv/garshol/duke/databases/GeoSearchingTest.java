@@ -74,7 +74,7 @@ public class GeoSearchingTest {
 
     try {
       processor.deduplicate(records);
-    } catch (com.spatial4j.core.exception.InvalidShapeException e) {
+    } catch (org.locationtech.spatial4j.exception.InvalidShapeException e) {
       // this is not a legal coordinate, because a latitude of 159 degrees
       // makes no sense
       return;

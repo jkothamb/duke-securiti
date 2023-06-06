@@ -25,6 +25,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
@@ -32,15 +34,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -72,6 +67,10 @@ public class LuceneDatabase implements Database {
 
   // helper for geostuff
   private GeoProperty geoprop;
+
+  interface FieldFactory {
+    Field createField(String name, String value, Field.Store stored);
+  }
 
   public LuceneDatabase() {
     this.analyzer = new StandardAnalyzer();
@@ -169,14 +168,15 @@ public class LuceneDatabase implements Database {
           doc.add(f);
 
         // this preserves the coordinates in readable form for display purposes
-        doc.add(new Field(propname, v, Field.Store.YES,
-                          Field.Index.NOT_ANALYZED));
+        doc.add(new StringField(propname, v, Field.Store.YES));
       } else {
-        Field.Index ix;
-        if (prop.isIdProperty())
-          ix = Field.Index.NOT_ANALYZED; // so findRecordById will work
-        else // if (prop.isAnalyzedProperty())
-          ix = Field.Index.ANALYZED;
+        FieldFactory factory;
+        if (prop.isIdProperty()) {
+          factory = (name, value, stored) -> new StringField(name, value, stored);
+        }
+        else { // if (prop.isAnalyzedProperty())
+          factory = (name, value, stored) -> new TextField(name, value, stored);
+        }
         // FIXME: it turns out that with the StandardAnalyzer you can't have a
         // multi-token value that's not analyzed if you want to find it again...
         // else
@@ -187,7 +187,7 @@ public class LuceneDatabase implements Database {
           if (v.equals(""))
             continue; // FIXME: not sure if this is necessary
 
-          Field field = new Field(propname, v, Field.Store.YES, ix);
+          Field field = factory.createField(propname, v, Field.Store.YES);
           if (boost != null)
             field.setBoost(boost);
           doc.add(field);
@@ -270,19 +270,19 @@ public class LuceneDatabase implements Database {
 
     // ok, we didn't do a geosearch, so proceed as normal.
     // first we build the combined query for all lookup properties
-    BooleanQuery query = new BooleanQuery();
+    var builder = new BooleanQuery.Builder();
     for (Property prop : config.getLookupProperties()) {
       Collection<String> values = record.getValues(prop.getName());
       if (values == null)
         continue;
       for (String value : values)
-        parseTokens(query, prop.getName(), value,
+        parseTokens(builder, prop.getName(), value,
                     prop.getLookupBehaviour() == Property.Lookup.REQUIRED,
                     prop.getHighProbability());
     }
 
     // do the query
-    return maintracker.doQuery(query);
+    return maintracker.doQuery(builder.build());
   }
 
   /**
@@ -369,7 +369,7 @@ public class LuceneDatabase implements Database {
    * @return the parsed query
    */
   private Query parseTokens(String fieldName, String value) {
-    BooleanQuery searchQuery = new BooleanQuery();
+    var searchQueryBuilder = new BooleanQuery.Builder();
     if (value != null) {
       Analyzer analyzer = new KeywordAnalyzer();
 
@@ -383,7 +383,7 @@ public class LuceneDatabase implements Database {
         while (tokenStream.incrementToken()) {
           String term = attr.toString();
           Query termQuery = new TermQuery(new Term(fieldName, term));
-          searchQuery.add(termQuery, Occur.SHOULD);
+          searchQueryBuilder.add(termQuery, Occur.SHOULD);
         }
       } catch (IOException e) {
         throw new DukeException("Error parsing input string '" + value + "' " +
@@ -391,14 +391,14 @@ public class LuceneDatabase implements Database {
       }
     }
 
-    return searchQuery;
+    return searchQueryBuilder.build();
   }
 
   /**
    * Parses Lucene query.
    * @param required Iff true, return only records matching this value.
    */
-  private void parseTokens(BooleanQuery parent, String fieldName,
+  private void parseTokens(BooleanQuery.Builder builder, String fieldName,
                              String value, boolean required, double probability) {
     value = escapeLucene(value);
     if (value.length() == 0)
@@ -420,10 +420,9 @@ public class LuceneDatabase implements Database {
           termQuery = new FuzzyQuery(new Term(fieldName, term));
         else
           termQuery = new TermQuery(new Term(fieldName, term));
-
         if (boost != null)
-          termQuery.setBoost(boost);
-        parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
+          termQuery = new BoostQuery(termQuery, boost);
+        builder.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
       }
     } catch (IOException e) {
       throw new DukeException("Error parsing input string '"+value+"' "+
@@ -482,17 +481,13 @@ public class LuceneDatabase implements Database {
     }
 
     public Collection<Record> doQuery(Query query) {
-      return doQuery(query, null);
-    }
-
-    public Collection<Record> doQuery(Query query, Filter filter) {
       List<Record> matches;
       try {
         ScoreDoc[] hits;
 
         int thislimit = Math.min(limit, max_search_hits);
         while (true) {
-          hits = searcher.search(query, filter, thislimit).scoreDocs;
+          hits = searcher.search(query, thislimit).scoreDocs;
           if (hits.length < thislimit || thislimit == max_search_hits)
             break;
           thislimit = thislimit * 5;

@@ -1,7 +1,6 @@
 
 package no.priv.garshol.duke.databases;
 
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.spatial.SpatialStrategy;
@@ -10,10 +9,10 @@ import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 
-import com.spatial4j.core.shape.Shape;
-import com.spatial4j.core.shape.Point;
-import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.distance.DistanceUtils;
+import org.locationtech.spatial4j.shape.Shape;
+import org.locationtech.spatial4j.shape.Point;
+import org.locationtech.spatial4j.context.SpatialContext;
+import org.locationtech.spatial4j.distance.DistanceUtils;
 
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.comparators.GeopositionComparator;
