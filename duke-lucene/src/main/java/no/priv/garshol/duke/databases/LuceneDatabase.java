@@ -23,10 +23,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
@@ -171,6 +168,7 @@ public class LuceneDatabase implements Database {
         doc.add(new StringField(propname, v, Field.Store.YES));
       } else {
         FieldFactory factory;
+        // https://stackoverflow.com/questions/43792291/what-does-elastic-lucene-do-with-a-field-that-is-not-analyzed
         if (prop.isIdProperty()) {
           factory = (name, value, stored) -> new StringField(name, value, stored);
         }
@@ -184,12 +182,13 @@ public class LuceneDatabase implements Database {
 
         Float boost = getBoostFactor(prop.getHighProbability(), BoostMode.INDEX);
         for (String v : record.getValues(propname)) {
-          if (v.equals(""))
+          if (v.isEmpty())
             continue; // FIXME: not sure if this is necessary
 
           Field field = factory.createField(propname, v, Field.Store.YES);
           if (boost != null)
-            field.setBoost(boost);
+            //https://stackoverflow.com/questions/50952727/ho-to-use-functionscorequery-with-text-fields
+            doc.add(new NumericDocValuesField(String.format("%sBoost", propname), boost.longValue()));
           doc.add(field);
         }
       }
@@ -421,6 +420,8 @@ public class LuceneDatabase implements Database {
         else
           termQuery = new TermQuery(new Term(fieldName, term));
         if (boost != null)
+          // https://stackoverflow.com/questions/9829161/lucene-how-to-boost-some-specific-field
+          // https://stackoverflow.com/questions/38803009/what-is-the-difference-between-query-time-boost-and-field-boost-in-lucene-6-0-1
           termQuery = new BoostQuery(termQuery, boost);
         builder.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
       }
