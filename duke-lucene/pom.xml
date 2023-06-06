@@ -10,7 +10,7 @@
     <artifactId>duke-lucene</artifactId>
     <packaging>jar</packaging>
     <properties>
-        <luceneVersion>7.7.3</luceneVersion>
+        <luceneVersion>8.11.2</luceneVersion>
     </properties>
 
     <dependencies>
@@ -36,15 +36,6 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>${luceneVersion}</version>
-        </dependency>
-
-        <!-- necessary for spatial searches
-             NOTE: the code is written so that Duke will work without it,
-                   as long as you don't use spatial searches -->
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-spatial</artifactId>
             <version>${luceneVersion}</version>
         </dependency>
 
