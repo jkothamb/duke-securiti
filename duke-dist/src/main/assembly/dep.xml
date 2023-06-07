@@ -29,12 +29,14 @@
 
             <includes>
                 <include>${project.groupId}:duke-core</include>
-                <include>${project.groupId}:duke-mapdb</include>
                 <include>${project.groupId}:duke-lucene</include>
+		<!--
+                <include>${project.groupId}:duke-mapdb</include>
                 <include>${project.groupId}:duke-server</include>
                 <include>${project.groupId}:duke-mongodb</include>
                 <include>${project.groupId}:duke-json</include>
                 <include>${project.groupId}:duke-es</include>
+		-->
             </includes>
 
             <binaries>
@@ -44,5 +46,4 @@
 
         </moduleSet>
     </moduleSets>
-
 </assembly>
