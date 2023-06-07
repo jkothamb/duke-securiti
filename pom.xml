@@ -39,11 +39,11 @@ TO PUBLISH SNAPSHOTS
         <version>7</version>
     </parent>
     <groupId>no.priv.garshol.duke</groupId>
-    <artifactId>duke-securiti</artifactId>
+    <artifactId>duke</artifactId>
     <packaging>pom</packaging>
     <version>1.3-SNAPSHOT</version>
 
-    <name>duke</name>
+    <name>Duke</name>
     <description>Duke is a configurable record linkage engine.</description>
     <url>https://github.com/larsga/Duke</url>
 
@@ -92,13 +92,12 @@ TO PUBLISH SNAPSHOTS
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
-                <artifactId>duke-lucene</artifactId>
+                <artifactId>duke-mapdb</artifactId>
                 <version>1.3-SNAPSHOT</version>
             </dependency>
-            <!--
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
-                <artifactId>duke-mapdb</artifactId>
+                <artifactId>duke-lucene</artifactId>
                 <version>1.3-SNAPSHOT</version>
             </dependency>
             <dependency>
@@ -121,7 +120,6 @@ TO PUBLISH SNAPSHOTS
                 <artifactId>duke-es</artifactId>
                 <version>1.3-SNAPSHOT</version>
             </dependency>
-            -->
         </dependencies>
     </dependencyManagement>
 
@@ -135,8 +133,8 @@ TO PUBLISH SNAPSHOTS
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
-                        <source>11</source>
-                        <target>11</target>
+                        <source>1.6</source>
+                        <target>1.6</target>
                     </configuration>
                 </plugin>
 
@@ -164,22 +162,6 @@ TO PUBLISH SNAPSHOTS
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.5.3</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <inherited>false</inherited>
-                    <configuration>
-                        <aggregate>true</aggregate>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>aggregate</id>
-                            <goals>
-                                <goal>aggregate-jar</goal>
-                            </goals>
-                            <phase>package</phase>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
